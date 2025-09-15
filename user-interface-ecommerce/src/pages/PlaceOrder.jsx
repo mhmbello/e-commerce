@@ -75,6 +75,7 @@ const PlaceOrder = () => {
           if (res.data.success) {
             setCartItems({});
             navigate("/orders");
+            toast.success(res.data.message);
           } else {
             toast.error(res.data.message || "Une erreur est survenue");
           }

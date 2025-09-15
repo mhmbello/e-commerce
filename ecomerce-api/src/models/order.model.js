@@ -21,7 +21,7 @@ const orderSchema = new Schema({
   status: {
     type: String,
     required: true,
-    default: "Order Placed",
+    default: "En attente",
   },
   paymentMethod: {
     type: String,

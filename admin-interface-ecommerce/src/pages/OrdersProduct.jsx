@@ -109,12 +109,11 @@ const OrdersProduct = ({ token }) => {
               onChange={(e) => handleStatus(e, order._id)}
               className='p-2 font-semibold'
             >
-              <option value='Order Placed'>Commande en cours</option>
-              <option value='Packing'>En cours de préparation</option>
-              <option value='Shipped'>Expédié</option>
-              <option value='Out for delivery'>En cours de livraison</option>
-              <option value='Delivered'>Livré</option>
-              <option value='Cancel'>Annulé</option>
+              <option value='En attente'>Commande en attente</option>
+              <option value='Preparation'>En cours de préparation</option>
+              <option value='Expédié'>Expédié</option>
+              <option value='Livré'>Livré</option>
+              <option value='Annulé'>Annulé</option>
             </select>
           </div>
         ))}

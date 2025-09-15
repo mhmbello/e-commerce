@@ -15,6 +15,7 @@ const placeOrder = async (req, res, next) => {
     // 🔥 On prépare les items pour l'ordre
     const orderItems = items.map((item) => ({
       productId: item._id,     // on prend l’_id du produit
+      image : item.image[0],  // optionnel si tu veux garder une image dans la commande
       name: item.name,         // optionnel si tu veux garder le nom dans la commande
       size: item.size,
       quantity: item.quantity,
@@ -29,9 +30,6 @@ const placeOrder = async (req, res, next) => {
       if (!product) continue;
 
       if (product.stock < item.quantity) {
-        console.log(`Stock insuffisant pour ${product.name}`);
-        console.log("STOCK ACTUEL ::::::::::::", product.stock);
-        console.log("QUANTITÉ DEMANDÉE ::::::::::::", item.quantity);
         return res.status(400).json({
           success: false,
           message: `Stock insuffisant pour ${product.name}`,
@@ -69,7 +67,7 @@ const placeOrder = async (req, res, next) => {
       address,
       amount,
       userId,
-      paymentMethod: "COD",
+      paymentMethod: "Paiement à la livraison",
       payment: false,
       date: Date.now(),
     };

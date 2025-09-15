@@ -15,8 +15,8 @@ const cloudnaryName = process.env.CLOUDINARY_NAME || "dyaj1dlzu";
 
 const jwtSecret = process.env.JWT_SECRET || "7293jkdkasfsnfsfns";
 
-const adminEmail = process.env.ADMIN_EMAIL || "foreveradmin@gmail.com";
-const adminPassword = process.env.ADMIN_PASSWORD || "Abcabc123!";
+const adminEmail = process.env.ADMIN_EMAIL || "rahmatoulayedia99@gmail.com";
+const adminPassword = process.env.ADMIN_PASSWORD || "12345678";
 
 export {
   serverPort,

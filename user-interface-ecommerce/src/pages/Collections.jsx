@@ -180,7 +180,7 @@ const Collections = () => {
       {/* ------------Filter products----------- */}
       <div className='flex-1'>
         <div className='flex justify-between text-base sm:text-2xl mb-4'>
-          <SectionTitle title={"ALL"} subtitle={"COLLECTIONS"} />
+          <SectionTitle title={"TOUTE LES"} subtitle={"COLLECTIONS"} />
           {/* -----Product sort------- */}
           <select
             onChange={(e) => setSortType(e.target.value)}

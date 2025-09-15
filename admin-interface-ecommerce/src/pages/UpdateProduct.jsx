@@ -1,4 +1,4 @@
-// forever-admin/src/pages/Update.jsx
+//  admin/src/pages/Update.jsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";

@@ -107,7 +107,8 @@ const handleAdminLogin = async (req, res, next) => {
 
 const getAllUsers = async (req, res, next) => {
   try {
-    const users = await userModel.find({}, "-password"); 
+    const users = await userModel.find({}, "-password");
+
     // "-password" exclut le champ password pour plus de sécurité
 
     if (!users || users.length === 0) {
@@ -123,6 +124,41 @@ const getAllUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+const getAllUsersWithOrderCount = async (req, res, next) => {
+  try {
+    // Aggregation pour ajouter le nombre de commandes à chaque utilisateur
+    const users = await userModel.aggregate([
+      {
+        $lookup: {
+          from: "orders",          // Nom de la collection orders
+          localField: "_id",       // Champ utilisateur
+          foreignField: "userId",  // Champ correspondant dans orders
+          as: "orders",
+        },
+      },
+      {
+        $addFields: {
+          totalOrders: { $size: "$orders" }, // Compte le nombre de commandes
+        },
+      },
+      {
+        $project: {
+          password: 0, // On exclut le mot de passe
+          orders: 0,   // Facultatif : on peut ne pas renvoyer la liste complète
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      payload: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 // Supprimer un utilisateur
 export const deleteUser = async (req, res) => {
@@ -150,4 +186,4 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-export { handleRegister, handleLogin, handleAdminLogin, getAllUsers };
+export { handleRegister, handleLogin, handleAdminLogin, getAllUsers, getAllUsersWithOrderCount };

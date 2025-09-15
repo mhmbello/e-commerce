@@ -1,4 +1,4 @@
-// forever-admin/src/pages/AddProduct.jsx
+//  admin/src/pages/AddProduct.jsx
 import React, { useState, useEffect } from "react";
 import { assets } from "../assets/admin_assets/assets";
 import axios from "axios";

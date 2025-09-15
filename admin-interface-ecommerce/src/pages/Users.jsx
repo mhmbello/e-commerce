@@ -1,4 +1,4 @@
-// forever-admin/src/pages/Users.jsx
+//  admin/src/pages/Users.jsx
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -102,7 +102,6 @@ const Users = () => {
             <th className="px-2 py-1">#</th>
             <th className="px-2 py-1">Name</th>
             <th className="px-2 py-1">Email</th>
-            <th className="px-2 py-1">Role</th>
             <th className="px-2 py-1">Nbre de commande</th>
             <th className="px-2 py-1">Créé le</th>
             <th className="px-2 py-1 text-center">Action</th>
@@ -110,12 +109,12 @@ const Users = () => {
         </thead>
         <tbody>
           {listUsers.map((user, index) => (
+            
             <tr key={user._id} className="border-t">
               <td className="px-2 py-1">{index + 1}</td>
               <td className="px-2 py-1">{user.name}</td>
               <td className="px-2 py-1">{user.email}</td>
-              <td className="px-2 py-1">{user.role || "user"}</td>
-              <td className="px-2 py-1">{user.orders?.length || 0}</td>
+              <td className="px-2 py-1">{user.totalOrders}</td>
               <td className="px-2 py-1">{new Date(user.createdAt).toLocaleDateString()}</td>
               <td className="px-2 py-1 text-center">
                 <button

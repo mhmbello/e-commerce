@@ -20,9 +20,12 @@ const userSchema = new Schema(
       default: {},
     },
   },
-  { minimize: false },
-  { timestamps: true },
+  {
+    minimize: false,
+    timestamps: true, // mets-le dans le même objet
+  }
 );
+
 
 const userModel = model("user", userSchema);
 

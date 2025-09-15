@@ -1,4 +1,4 @@
-//forever-admin/src/components/Login.jsx
+// admin/src/components/Login.jsx
 
 import React, { useState } from "react";
 import axios from "axios";

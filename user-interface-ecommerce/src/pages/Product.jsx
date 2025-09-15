@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/frontend_assets/assets";
 import RelatedProducts from "../components/RelatedProducts";
+import ProductDetail from "../components/ProductDetail";
 
 const Product = () => {
   const { pId } = useParams();
@@ -89,12 +90,21 @@ const Product = () => {
           </div>
           <button
             onClick={() => {
-              addToCart(productData._id, size), size && navigate("/cart");
+              if (productData.stock > 0) {
+                addToCart(productData._id, size);
+                size && navigate("/cart");
+              }
             }}
-            className="bg-black text-white px-8 py-3 text-sm active:bg-gray-700"
+            disabled={productData.stock <= 0}
+            className={`px-8 py-3 text-sm ${
+              productData.stock <= 0
+                ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                : "bg-black text-white active:bg-gray-700"
+            }`}
           >
-            AJOUTER AU PANIER
+            {productData.stock <= 0 ? "RUPTURE DE STOCK" : "AJOUTER AU PANIER"}
           </button>
+
           <hr className="mt-8 sm:w-4/5" />
           <div className="text-sm text-gray-500 mt-5 flex flex-col gap-1">
             <p>Produit 100% original.</p>
@@ -105,28 +115,16 @@ const Product = () => {
       </div>
 
       {/* ------section description & avis-------- */}
-      <div className="mt-20">
-        <div className="flex">
-          <p className="border px-5 py-3 text-sm">Description</p>
-          <p className="border px-5 py-3 text-sm">Avis</p>
-        </div>
-        <div className="flex flex-col gap-4 border p-6 text-sm text-gray-500">
-          <p>
-        
-        
-          </p>
-          <p>
-            {
-      
-            }
-          </p>
-        </div>
-      </div>
+      <ProductDetail
+        description={productData.description}
+        reviews={productData.reviews} // ex: tableau [{user:"Ali", comment:"Top", rating:5}]
+      />
 
       {/* ------affichage produits similaires */}
       <RelatedProducts
         category={productData.category}
         subCategory={productData.subCategory}
+        currentProductId={productData._id}
       />
     </main>
   ) : (

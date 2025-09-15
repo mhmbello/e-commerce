@@ -1,4 +1,4 @@
-// forever-admin/src/pages/ListProducts.jsx
+//  admin/src/pages/ListProducts.jsx
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -179,8 +179,19 @@ const ListProducts = () => {
                 </td>
                 <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500" : ""}`}>{product.price} GNF</td>
                 <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500" : ""}`}>{product.stock}</td>
-                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500" : ""}`}>{product.minStock || 0}</td>
-                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500" : ""}`}>{product.expiryDate || "before-date"}</td>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500" : ""}`}>{product.minStock || 0}</td><td
+                  className={`px-2 py-1 ${
+                    product.stock <= product.minStock ? "text-red-500" : ""
+                  }`}
+                >
+                  {product.expiryDate
+                    ? new Date(product.expiryDate).toLocaleDateString("fr-FR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })
+                    : "---"}
+                </td>
                 <td className="px-2 py-1 text-center">
                   <button className="text-blue-500 mr-4" onClick={() => navigate(`/update-product/${product._id}`)}>
                     Edit
