@@ -1,17 +1,33 @@
 // forever-admin/src/pages/AddProduct.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { assets } from "../assets/admin_assets/assets";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { API_URL } from "../constant/constant";
 
 const AddProduct = ({ token }) => {
+
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/category`);
+        const mainCategories = res.data.payload.filter(c => !c.parent); // uniquement principales
+        setCategories(mainCategories);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const [productData, setProductData] = useState({
     name: "",
     description: "",
     price: 0,
-    category: "Men",
-    subCategory: "Topwear",
+    category: "",
+    subCategory: "",
     sizes: [],
     bestseller: false,
     stock: 0,
@@ -80,8 +96,8 @@ const AddProduct = ({ token }) => {
           name: "",
           description: "",
           price: 0,
-          category: "Men",
-          subCategory: "Topwear",
+          category: "",
+          subCategory: "",
           sizes: [],
           bestseller: false,
           stock: 0,
@@ -170,9 +186,12 @@ const AddProduct = ({ token }) => {
               onChange={setProductValue}
               className="w-full px-3 py-2"
             >
-              <option value="Men">Men</option>
-              <option value="Women">Women</option>
-              <option value="Kids">Kids</option>
+              <option value="">Sélectionner une catégorie</option>
+              {categories.map(cat => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -184,9 +203,14 @@ const AddProduct = ({ token }) => {
               onChange={setProductValue}
               className="w-full px-3 py-2"
             >
-              <option value="Topwear">Topwear</option>
-              <option value="Bottomwear">Bottomwear</option>
-              <option value="Winterwear">Winterwear</option>
+              <option value="">Sélectionner une sous-catégorie</option>
+              {categories
+                .find(cat => cat._id === productData.category)
+                ?.subCategories?.map(sub => (
+                  <option key={sub._id} value={sub._id}>
+                    {sub.name}
+                  </option>
+                ))}
             </select>
           </div>
 

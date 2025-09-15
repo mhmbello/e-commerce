@@ -22,24 +22,21 @@ export const createCategory = async (req, res) => {
 // Lister toutes les catégories principales et leurs sous-catégories
 export const getCategories = async (req, res) => {
   try {
-    // Categories principales
-    const categories = await categoryModel
-      .find({ parent: null })
-      .lean();
+    // Récupère toutes les catégories principales
+    const categories = await categoryModel.find({ parent: null }).lean();
 
-    // Ajouter les sous-catégories à chaque catégorie
-    const categoriesWithSubs = await Promise.all(
-      categories.map(async (cat) => {
-        const subCategories = await categoryModel.find({ parent: cat._id }).lean();
-        return { ...cat, subCategories };
-      })
-    );
+    // Pour chaque catégorie principale, récupère ses sous-catégories
+    for (let cat of categories) {
+      const subs = await categoryModel.find({ parent: cat._id }).lean();
+      cat.subCategories = subs; // ajoute un champ subCategories
+    }
 
-    res.status(200).json({ success: true, payload: categoriesWithSubs });
+    res.status(200).json({ success: true, payload: categories });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // Récupérer une catégorie par ID avec ses sous-catégories
 export const getCategoryById = async (req, res) => {

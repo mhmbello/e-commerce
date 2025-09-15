@@ -75,7 +75,9 @@ const handleAddProduct = async (req, res, next) => {
 //get all product
 const handleAllProducts = async (req, res, next) => {
   try {
-    const products = await productModel.find();
+    const products = await productModel.find()
+    .populate("category", "name")     // récupère uniquement le champ name
+    .populate("subCategory", "name");
 
     if (!products || products.length === 0) {
       throw createError(404, "No products found");

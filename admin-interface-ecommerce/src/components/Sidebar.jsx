@@ -21,6 +21,13 @@ const Sidebar = () => {
           <p className='hidden sm:block'>Listes de Produits</p>
         </NavLink>
         <NavLink
+          to='/list-categories'
+          className='flex items-center w-full gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l'
+        >
+          <img className='w-5 h-5' src={assets.add_icon} alt='add icon' />
+          <p className='hidden sm:block'>Categories</p>
+        </NavLink>
+        <NavLink
           to='/orders'
           className='flex items-center w-full gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l'
         >
@@ -33,13 +40,6 @@ const Sidebar = () => {
         >
           <img className='w-5 h-5' src={assets.add_icon} alt='add icon' />
           <p className='hidden sm:block'>Utilisateurs</p>
-        </NavLink>
-        <NavLink
-          to='/list-categories'
-          className='flex items-center w-full gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l'
-        >
-          <img className='w-5 h-5' src={assets.add_icon} alt='add icon' />
-          <p className='hidden sm:block'>Categories</p>
         </NavLink>
       </div>
     </aside>

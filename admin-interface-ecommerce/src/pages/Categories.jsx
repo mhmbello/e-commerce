@@ -52,21 +52,53 @@ const Categories = () => {
   };
 
   const saveCategory = async () => {
-    try {
-      if (modalCategory._id) {
-        // Update existante
-        await axios.put(`http://localhost:4001/api/category/${modalCategory._id}`, modalCategory);
-        setCategories(categories.map(c => (c._id === modalCategory._id ? modalCategory : c)));
-      } else {
-        // Nouvelle catégorie avec sous-catégories
-        const res = await axios.post("http://localhost:4001/api/category", modalCategory);
-        setCategories([...categories, res.data.payload || res.data]);
+  try {
+    if (modalCategory._id) {
+      // Update existante (nom + description seulement)
+      await axios.put(`http://localhost:4001/api/category/${modalCategory._id}`, {
+        name: modalCategory.name,
+        description: modalCategory.description,
+      });
+
+      setCategories(
+        categories.map((c) =>
+          c._id === modalCategory._id ? { ...c, ...modalCategory } : c
+        )
+      );
+    } else {
+      // Nouvelle catégorie principale
+      const resMain = await axios.post("http://localhost:4001/api/category", {
+        name: modalCategory.name,
+        description: modalCategory.description,
+        parent: null, // catégorie principale
+      });
+
+      const mainCategory = resMain.data.payload;
+      let newCategories = [mainCategory];
+
+      // Boucle pour créer les sous-catégories
+      const subCategories = modalCategory.subCategories.filter((s) => s.trim() !== "");
+      for (let subName of subCategories) {
+        if (subName.trim() === "") continue;
+        const resSub = await axios.post("http://localhost:4001/api/category", {
+          name: subName,
+          description: "",
+          parent: mainCategory._id, // parent = catégorie principale
+        });
+        console.log(resSub.data.payload._id);
+        //newCategories.push(resSub.data.payload);
       }
-      closeModal();
-    } catch (err) {
-      console.error("Erreur lors de l'enregistrement :", err);
+      setCategories([...categories, mainCategory]);
+      window.location.reload();
     }
-  };
+
+    closeModal();
+  } catch (err) {
+    console.error("Erreur lors de l'enregistrement :", err);
+  }
+};
+
+
 
   const deleteCategory = async (id) => {
     try {
@@ -106,7 +138,13 @@ const Categories = () => {
                 <td className="px-2 py-1">{index + 1}</td>
                 <td className="px-2 py-1">{cat.name}</td>
                 <td className="px-2 py-1">{cat.description || "-"}</td>
-                <td className="px-2 py-1">{cat.subCategories?.length || 0}</td>
+                <td className="px-2 py-1">
+                  {cat.subCategories?.map((sub) => (
+                    <span key={sub._id} className="bg-gray-200 text-gray-800 px-2 py-0.5 rounded-full mr-1 text-xs">
+                      {sub.name}
+                    </span>
+                  ))}
+                </td>
                 <td className="px-2 py-1">{cat.products?.length || 0}</td>
                 <td className="px-2 py-1 text-center flex justify-center gap-2">
                   <button

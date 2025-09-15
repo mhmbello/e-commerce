@@ -3,11 +3,8 @@ import { isAdmin } from "../middlewares/admin.middleware.js";
 import {
   getAllOrders,
   placeOrder,
-  placeOrderRazorpay,
-  placeOrderStripe,
   updateOrderStatus,
   userOrders,
-  verifyStripePayment,
 } from "../controllers/order.controller.js";
 import { isAuthorized } from "../middlewares/auth.js";
 
@@ -16,14 +13,9 @@ const orderRouter = express.Router();
 orderRouter.get("/list", isAdmin, getAllOrders);
 orderRouter.put("/status", isAdmin, updateOrderStatus);
 // payment feature
-orderRouter.put("/place", isAuthorized, placeOrder);
-orderRouter.post("/stripe", isAuthorized, placeOrderStripe);
-orderRouter.post("/razorpay", isAuthorized, placeOrderRazorpay);
+orderRouter.post("/place", isAuthorized, placeOrder);
 
 // user
 orderRouter.get("/user-orders", isAuthorized, userOrders);
-
-//verify payment
-orderRouter.post("/verify-stripe", isAuthorized, verifyStripePayment);
 
 export default orderRouter;

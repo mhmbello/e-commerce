@@ -12,7 +12,7 @@ import productRouter from "./routes/product.route.js";
 import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/order.route.js";
 import categoryRouter from "./routes/category.route.js";
-import subcategoryRouter from "./routes/subcategory.route.js";
+import "./cron/alertCron.js";
 
 const app = express();
 
@@ -47,7 +47,6 @@ app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/category", categoryRouter);
-app.use("/api/subcategory", subcategoryRouter);
 
 // client error
 app.use((req, res, next) => {

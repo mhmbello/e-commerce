@@ -33,7 +33,7 @@ const Cart = () => {
   return (
     <main className='border-t pt-14'>
       <div className='text-2xl mb-3'>
-        <SectionTitle title={"VOTRE"} subtitle={"PANIER"} />
+        <SectionTitle title={"MON"} subtitle={"PANIER"} />
       </div>
 
       <div>
@@ -61,8 +61,7 @@ const Cart = () => {
 
                   <div className='flex items-center gap-5 mt-2'>
                     <p>
-                      {productData.price}
-                      {currency}
+                      {productData.price} {currency}
                     </p>
                     <p className='px-2 sm:px-3 sm:py-1 border bg-slate-50'>
                       {item.size}

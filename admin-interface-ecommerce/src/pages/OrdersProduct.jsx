@@ -51,7 +51,7 @@ const OrdersProduct = ({ token }) => {
 
   return (
     <main>
-      <h1>Order page</h1>
+      <h1>Page des commandes</h1>
 
       <div>
         {orders.map((order, i) => (
@@ -97,23 +97,23 @@ const OrdersProduct = ({ token }) => {
             </div>
             <div>
               <p className='text-sm sm:text-[15px]'>
-                Items: {order.items.length}
+                Articles: {order.items.length}
               </p>
-              <p className='mt-3'>Method: {order.paymentMethod}</p>
-              <p>Payment: {order.payment ? "Done" : "Panding"}</p>
+              <p className='mt-3'>éthode: {order.paymentMethod}</p>
+              <p>Paiement: {order.payment ? "Effectué" : "En attente"}</p>
               <p>Date: {new Date(order.date).toLocaleDateString()}</p>
             </div>
-            <p className='text-sm sm:text-[15px] '>{order.amount}SR</p>
+            <p className='text-sm sm:text-[15px] '>{order.amount} GNF</p>
             <select
               value={order.status}
               onChange={(e) => handleStatus(e, order._id)}
               className='p-2 font-semibold'
             >
-              <option value='Order Placed'>Order Placed</option>
-              <option value='Packing'>Packing</option>
-              <option value='Shipped'>Shipped</option>
-              <option value='Out for delivery'>Out for delivery</option>
-              <option value='Delivered'>Delivered</option>
+              <option value='Order Placed'>Commande en cours</option>
+              <option value='Packing'>En cours de préparation</option>
+              <option value='Shipped'>Expédié</option>
+              <option value='Out for delivery'>En cours de livraison</option>
+              <option value='Delivered'>Livré</option>
             </select>
           </div>
         ))}

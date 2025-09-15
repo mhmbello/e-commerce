@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import mongoose from "mongoose";
 
 const productSchema = new Schema({
   name: { type: String, required: true },
@@ -9,9 +10,9 @@ const productSchema = new Schema({
 
   image: { type: [String], required: true },
 
-  category: { type: String, required: true },
+  category: { type: mongoose.Schema.Types.ObjectId, ref: "category", required: true },
 
-  subCategory: { type: String, required: true },
+  subCategory: { type: mongoose.Schema.Types.ObjectId, ref: "category", required: true },
 
   sizes: { type: [String], required: true },
 

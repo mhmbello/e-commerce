@@ -68,7 +68,7 @@ const PlaceOrder = () => {
 
       switch (method) {
         case "cod":
-          const res = await axios.put(serverURL + "/order/place", order, {
+          const res = await axios.post(serverURL + "/order/place", order, {
             headers: { token },
           });
 
@@ -76,11 +76,11 @@ const PlaceOrder = () => {
             setCartItems({});
             navigate("/orders");
           } else {
-            toast.error("Une erreur est survenue");
+            toast.error(res.data.message || "Une erreur est survenue");
           }
           break;
         case "stripe":
-          const stripe = await axios.post(serverURL + "/api/order/stripe", order, {
+          const stripe = await axios.post(serverURL + "/order/stripe", order, {
             headers: { token },
           });
           if (stripe.data.success) {
@@ -208,22 +208,6 @@ const PlaceOrder = () => {
         <div className="mt-12">
           <SectionTitle title={"MÉTHODE"} subtitle={"DE PAIEMENT"} />
           <div className="flex flex-col gap-3 lg:flex-row">
-            <div
-              onClick={() => setMethod("stripe")}
-              className="flex items-center gap-3 border p-2 px-3 cursor-pointer"
-            >
-              <p
-                className={`min-w-3.5 h-3.5 border rounded-full ${
-                  method === "stripe" ? "bg-green-700" : ""
-                }`}
-              ></p>
-              <img
-                className="h-5 mx-4"
-                src={assets.stripe_logo}
-                alt="logo stripe"
-              />
-            </div>
-
             <div
               onClick={() => setMethod("cod")}
               className="flex items-center gap-3 border p-2 px-3 cursor-pointer"

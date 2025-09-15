@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 export const ShopContext = createContext();
 
 const ShopContextProvider = (props) => {
-  const currency = "SR";
+  const currency = "GNF";
   const delivery_fee = 10;
   const [token, setToken] = useState("");
   const navigate = useNavigate();
@@ -87,7 +87,7 @@ const ShopContextProvider = (props) => {
     if (token) {
       try {
         await axios.put(
-          serverURL + "/api/cart/update",
+          serverURL + "/cart/update",
           { itemId, size, quantity },
           { headers: { token } }
         );
@@ -118,7 +118,7 @@ const ShopContextProvider = (props) => {
 
   const getUserCart = async (token) => {
     try {
-      const res = await axios.get(serverURL + "/api/cart/get", {
+      const res = await axios.get(serverURL + "/cart/get", {
         headers: { token },
       });
 

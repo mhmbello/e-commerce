@@ -1,18 +1,71 @@
 import orderModel from "../models/order.model.js";
 import userModel from "../models/user.model.js";
+import productModel from "../models/product.model.js";
+import createError from "http-errors";
 import { successResponse } from "./response.controller.js";
-import Stripe from "stripe";
+import { sendEmail } from "../utils/sendEmail.js";
 
-const currency = "sar";
+const currency = "GNF";
 const delivery_chage = 10;
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const placeOrder = async (req, res, next) => {
   try {
     const { userId, address, amount, items } = req.body;
 
+    // 🔥 On prépare les items pour l'ordre
+    const orderItems = items.map((item) => ({
+      productId: item._id,     // on prend l’_id du produit
+      name: item.name,         // optionnel si tu veux garder le nom dans la commande
+      size: item.size,
+      quantity: item.quantity,
+      price: item.price,       // optionnel, pour figer le prix au moment de l’achat
+    }));
+    console.log("ORDER ITEMS ::::::::::::", orderItems);
+
+    const lowStockProducts = [];
+    // 🔥 Mise à jour du stock pour chaque produit
+    for (const item of items) {
+      const product = await productModel.findById(item._id);
+      if (!product) continue;
+
+      if (product.stock < item.quantity) {
+        console.log(`Stock insuffisant pour ${product.name}`);
+        console.log("STOCK ACTUEL ::::::::::::", product.stock);
+        console.log("QUANTITÉ DEMANDÉE ::::::::::::", item.quantity);
+        return res.status(400).json({
+          success: false,
+          message: `Stock insuffisant pour ${product.name}`,
+        });
+      }
+      product.stock -= item.quantity;
+      await product.save();
+      // Vérifier le seuil minimal
+      // Vérifier le seuil minimal
+      if (product.stock <= product.minStock) {
+        lowStockProducts.push({
+          name: product.name,
+          stock: product.stock,
+        });
+      }
+    }
+
+    // Si certains produits ont un stock faible, envoyer un e-mail
+    if (lowStockProducts.length > 0) {
+      const productList = lowStockProducts
+        .map(p => `- ${p.name}: Stock actuel ${p.stock}`)
+        .join("\n");
+
+      await sendEmail({
+        to: "rahmatoulayedia99@gmail.com",
+        subject: `Alerte stock faible`,
+        text: `Les produits suivants ont atteint le seuil minimal de stock :\n\n${productList}`,
+        html: `<p>Les produits suivants ont atteint le seuil minimal de stock :</p><ul>${lowStockProducts.map(p => `<li>${p.name}: Stock actuel ${p.stock}</li>`).join("")}</ul>`,
+      });
+    }
+
+    // 🔥 Création de la commande
     const orderData = {
-      items,
+      items: orderItems,
       address,
       amount,
       userId,
@@ -23,69 +76,15 @@ const placeOrder = async (req, res, next) => {
 
     await orderModel.create(orderData);
 
+    // 🔥 Vider le panier utilisateur
     await userModel.findByIdAndUpdate(userId, { cartData: {} }, { new: true });
 
     return successResponse(res, {
       statusCode: 200,
-      message: "order place success",
+      message: "Commande passée avec succès",
     });
   } catch (error) {
-    next(error);
-  }
-};
-
-const placeOrderStripe = async (req, res, next) => {
-  try {
-    const { userId, address, amount, items } = req.body;
-    const { origin } = req.headers;
-    const orderData = {
-      items,
-      address,
-      amount,
-      userId,
-      paymentMethod: "stripe",
-      payment: false,
-      date: Date.now(),
-    };
-
-    const newOrder = await orderModel.create(orderData);
-    const line_items = items.map((item) => ({
-      price_data: {
-        currency: currency,
-        product_data: {
-          name: item.name,
-        },
-        unit_amount: item.price * 100,
-      },
-      quantity: item.quantity,
-    }));
-
-    line_items.push({
-      price_data: {
-        currency: currency,
-        product_data: {
-          name: "Delivery Charges",
-        },
-        unit_amount: delivery_chage,
-      },
-      quantity: 1,
-    });
-    const session = await stripe.checkout.sessions.create({
-      success_url: `${origin}/verify?success=true&orderId=${newOrder._id}`,
-      cancel_url: `${origin}/verify?success=false&orderId=${newOrder._id}`,
-      line_items,
-      mode: "payment",
-    });
-
-    res.json({ success: true, session_url: session.url });
-  } catch (error) {
-    next(error);
-  }
-};
-
-const placeOrderRazorpay = async (req, res, next) => {
-  try {
-  } catch (error) {
+    console.error("Erreur placeOrder :::", error);
     next(error);
   }
 };
@@ -133,40 +132,10 @@ const updateOrderStatus = async (req, res, next) => {
   }
 };
 
-const verifyStripePayment = async (req, res, next) => {
-  try {
-    const { orderId, success, userId } = req.body;
-
-    if (success === "true") {
-      await orderModel.findByIdAndUpdate(
-        orderId,
-        { payment: true },
-        { new: true }
-      );
-      await userModel.findByIdAndUpdate(
-        userId,
-        { cartData: {} },
-        { new: true }
-      );
-
-      return successResponse(res, {
-        statusCode: 200,
-        message: "successfully verified",
-      });
-    } else {
-      await orderModel.findByIdAndDelete(orderId);
-    }
-  } catch (error) {
-    next(error);
-  }
-};
 
 export {
   placeOrder,
-  placeOrderStripe,
-  placeOrderRazorpay,
   getAllOrders,
   userOrders,
   updateOrderStatus,
-  verifyStripePayment,
 };

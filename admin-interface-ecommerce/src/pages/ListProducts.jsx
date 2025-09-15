@@ -146,12 +146,14 @@ const ListProducts = () => {
                     alt={`Image de ${product.name}`}
                   />
                 </td>
-                <td className="px-2 py-1">{product.name}</td>
-                <td className="px-2 py-1">{product.category}</td>
-                <td className="px-2 py-1">{product.price} €</td>
-                <td className="px-2 py-1">{product.stock}</td>
-                <td className="px-2 py-1">{product.minStock || 0}</td>
-                <td className="px-2 py-1">{product.expiryDate || "before-date"}</td>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500 text-bold" : ""}`}>
+                  {product.name}
+                </td>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500 text-bold" : ""}`}>{product.category?.name}</td>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500 text-bold" : ""}`}>{product.price} €</td>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500 text-bold" : ""}`}>{product.stock}</td>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500 text-bold" : ""}`}>{product.minStock || 0}</td>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500 text-bold" : ""}`}>{product.expiryDate || "before-date"}</td>
                 <td className="px-2 py-1 text-center">
                   <button className="text-blue-500 mr-4" onClick={() => navigate(`/update-product/${product._id}`)}>
                     Edit
