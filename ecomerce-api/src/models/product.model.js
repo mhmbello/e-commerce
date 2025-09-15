@@ -1,91 +1,34 @@
 import { Schema, model } from "mongoose";
 
 const productSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-  },
+  name: { type: String, required: true },
 
-  description: {
-    type: String,
-    required: true,
-  },
+  description: { type: String, required: true },
 
-  price: {
-    type: Number,
-    required: true,
-  },
+  price: { type: Number, required: true },
 
-  image: {
-    type: Array,
-    required: true,
-  },
+  image: { type: [String], required: true },
 
-  category: {
-    type: String,
-    required: true,
-  },
+  category: { type: String, required: true },
 
-  subCategory: {
-    type: String,
-    required: true,
-  },
+  subCategory: { type: String, required: true },
 
-  sizes: {
-    type: Array,
-    required: true,
-  },
+  sizes: { type: [String], required: true },
 
-  bestseller: {
-    type: Boolean,
-    required: true,
-  },
+  bestseller: { type: Boolean, required: true },
 
-  // ✅ Stock disponible
-  stock: {
-    type: Number,
-    required: true,
-    default: 0,
-  },
+  stock: { type: Number, required: true, default: 0 },
 
-  // ✅ Seuil minimal (alerte si stock < seuil)
-  minStock: {
-    type: Number,
-    required: true,
-    default: 5,
-  },
+  minStock: { type: Number, required: true, default: 5 },
 
-  // ✅ Date de péremption (pour produits alimentaires/pharma)
-  expiryDate: {
-    type: Date,
-    required: false, // facultatif car tous les produits ne périment pas
-  },
+  expiryDate: { type: Date, required: false }, // Date cohérente
 
-  // ✅ Statut automatique
-  isExpired: {
-    type: Boolean,
-    default: false,
-  },
+  isExpired: { type: Boolean, default: false },
 
-  date: {
-    type: Number,
-    required: true,
-  },
-  stock: {
-    type: Number,
-    required: true
-  },
-  minStock: {
-    type: Number,
-    required: true
-  },
-  expiryDate: {
-    type: String,
-    required: false
-  }
+  date: { type: Number, required: true },
 });
 
-// Middleware pour mettre à jour le statut de péremption automatiquement
+// ✅ Middleware pour calculer si expiré
 productSchema.pre("save", function (next) {
   if (this.expiryDate && new Date() > this.expiryDate) {
     this.isExpired = true;

@@ -167,10 +167,44 @@ const handleSingleProduct = async (req, res, next) => {
   }
 };
 
+const getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const product = await productModel.findById(id).lean();
+     console.log("📌 Produit trouvé :", product);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: "Produit non trouvé",
+      });
+    }
+
+    console.log("✅ Produit trouvé :", product);
+
+    res.status(200).json({
+      success: true,
+      message: "Produit retourné avec succès",
+      payload: product,
+    });
+  } catch (error) {
+    console.error("❌ Erreur :", error);
+    res.status(500).json({
+      success: false,
+      message: "Erreur serveur",
+      error: error.message,
+    });
+  }
+};
+
+
+
 export {
   handleAddProduct,
   handleAllProducts,
   handleRemoveProduct,
   handleSingleProduct,
   updateProductStock,
+  getProductById,
 };

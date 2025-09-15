@@ -4,9 +4,12 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { API_URL } from "../constant/constant";
 import * as XLSX from "xlsx";
+import { useNavigate } from "react-router-dom";
+const token = localStorage.getItem("token");
 
 const ListProducts = () => {
   const [listProduct, setListProduct] = useState([]);
+  const navigate = useNavigate();
   console.log("LIST PRODUCTS :::::::::::::", listProduct)
 
   // Récupération des produits depuis ton backend
@@ -42,18 +45,20 @@ const ListProducts = () => {
 
   // Suppression d’un produit
   const deleteProduct = async (id) => {
-    if (!window.confirm("Voulez-vous vraiment supprimer ce produit ?")) return;
-    try {
-      const res = await axios.delete(`${API_URL}/product/${id}`);
-      if (res.data.success) {
-        toast.success("Produit supprimé !");
-        setListProduct(listProduct.filter((p) => p._id !== id));
-      } else {
-        toast.error(res.data.message || "Échec de la suppression");
+    if (window.confirm("Voulez-vous vraiment supprimer cet utilisateur ?")) {
+      try {
+        const res = await axios.delete(`${API_URL}/product/${id}`, {
+          headers: { token },
+        });
+        if (res.data.success) {
+          toast.success("Produit supprimé !");
+          setListProduct(listProduct.filter((product) => product._id !== id));
+        } else {
+          toast.error("Erreur lors de la suppression");
+        }
+      } catch (error) {
+        toast.error(error.message);
       }
-    } catch (error) {
-      console.error(error);
-      toast.error("Erreur lors de la suppression du produit");
     }
   };
 
@@ -111,45 +116,58 @@ const ListProducts = () => {
         </div>
       </div>
 
-      {/* Header du tableau */}
-      <div className="grid grid-cols-8 col-span-1 items-center py-1 px-2 border border-gray-100 text-sm font-medium">
-        <span>Images</span>
-        <span>Name</span>
-        <span>Category</span>
-        <span>Price</span>
-        <span>Stock</span>
-        <span>Seuil minimal</span>
-        <span>Expiration date</span>
-        <span className="text-center">Action</span>
-      </div>
-
-      {/* Liste des produits */}
-      <div>
-        {listProduct.map((product) => (
-          <div
-            key={product._id}
-            className="grid grid-cols-8 col-span-1 items-center py-1 px-2 border border-gray-100 text-sm"
-          >
-            <img className="w-12" src={product.image[0]} alt={product.name} />
-            <p>{product.name}</p>
-            <p>{product.category}</p>
-            <p>{product.price} €</p>
-
-            <p>{product.stock} </p>
-
-            <p>{product.minStock || 0}</p>
-            <p>{product.expiryDate || "before-date"}</p>
-
-            {/* Actions */}
-            <p
-              onClick={() => deleteProduct(product._id)}
-              className="text-center cursor-pointer text-lg text-red-500"
-            >
-              X
-            </p>
-          </div>
-        ))}
-      </div>
+      <table className="table-auto w-full border border-gray-200 text-sm">
+        <thead>
+          <tr className="bg-gray-100 text-left">
+            <th className="px-2 py-1">Images</th>
+            <th className="px-2 py-1">Name</th>
+            <th className="px-2 py-1">Category</th>
+            <th className="px-2 py-1">Price</th>
+            <th className="px-2 py-1">Stock</th>
+            <th className="px-2 py-1">Seuil minimal</th>
+            <th className="px-2 py-1">Expiration date</th>
+            <th className="px-2 py-1 text-center">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {listProduct.length === 0 ? (
+            <tr>
+              <td colSpan={8} className="text-center py-4">
+                Aucun produit
+              </td>
+            </tr>
+          ) : (
+            listProduct.map((product) => (
+              <tr key={product._id} className="border-t">
+                <td className="px-2 py-1">
+                  <img
+                    className="w-12"
+                    src={product.image?.[0] || "/default-product.png"}
+                    alt={`Image de ${product.name}`}
+                  />
+                </td>
+                <td className="px-2 py-1">{product.name}</td>
+                <td className="px-2 py-1">{product.category}</td>
+                <td className="px-2 py-1">{product.price} €</td>
+                <td className="px-2 py-1">{product.stock}</td>
+                <td className="px-2 py-1">{product.minStock || 0}</td>
+                <td className="px-2 py-1">{product.expiryDate || "before-date"}</td>
+                <td className="px-2 py-1 text-center">
+                  <button className="text-blue-500 mr-4" onClick={() => navigate(`/update-product/${product._id}`)}>
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deleteProduct(product._id)}
+                    className="text-red-500 hover:text-red-700 font-bold"
+                  >
+                    X
+                  </button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </main>
   );
 };

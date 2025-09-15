@@ -2,6 +2,7 @@ import React, { useContext, useState } from "react";
 import { assets } from "../assets/frontend_assets/assets";
 import { Link, NavLink } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
+import logo1 from "../assets/frontend_assets/logo1.png";
 
 const Navbar = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -24,7 +25,7 @@ const Navbar = () => {
     <header>
       <nav className='flex items-center justify-between py-5 font-medium'>
         <Link to='/'>
-          <img className='w-36' src={assets.logo} alt='logo' />
+          <img className='w-36' src={logo1} alt='logo' />
         </Link>
         <ul className='hidden sm:flex text-sm gap-5 text-gray-700'>
           <NavLink to='/' className='flex flex-col items-center gap-1'>
@@ -39,7 +40,7 @@ const Navbar = () => {
             <hr className='hidden h-0.5 w-3/4 border-none bg-gray-700' />
           </NavLink>{" "}
           <NavLink to='/about' className='flex flex-col items-center gap-1'>
-            <p>ABOUT</p>
+            <p>À PROPOS</p>
             <hr className=' hidden h-0.5 w-3/4 border-none bg-gray-700' />
           </NavLink>{" "}
           <NavLink to='/contact' className='flex flex-col items-center gap-1'>

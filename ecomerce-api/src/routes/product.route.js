@@ -5,6 +5,7 @@ import {
   handleAllProducts,
   handleRemoveProduct,
   handleSingleProduct,
+  getProductById,
 } from "../controllers/product.controller.js";
 import upload from "../middlewares/multer.js";
 import { isAdmin } from "../middlewares/admin.middleware.js";
@@ -25,5 +26,5 @@ productRouter.post(
 productRouter.get("/all", handleAllProducts);
 productRouter.get("/:id", isAdmin, handleSingleProduct);
 productRouter.delete("/:id", isAdmin, handleRemoveProduct);
-productRouter.put("/:id", isAdmin, updateProductStock);
+productRouter.get("/:id", getProductById);
 export default productRouter;

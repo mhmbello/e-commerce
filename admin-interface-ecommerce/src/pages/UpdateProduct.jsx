@@ -1,29 +1,39 @@
-// forever-admin/src/pages/AddProduct.jsx
-import React, { useState } from "react";
-import { assets } from "../assets/admin_assets/assets";
+// forever-admin/src/pages/Update.jsx
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { API_URL } from "../constant/constant";
 
-const AddProduct = ({ token }) => {
-  const [productData, setProductData] = useState({
-    name: "",
-    description: "",
-    price: 0,
-    category: "Men",
-    subCategory: "Topwear",
-    sizes: [],
-    bestseller: false,
-    stock: 0,
-    minStock: 5,
-    expiryDate: "",
-    image1: null,
-    image2: null,
-    image3: null,
-    image4: null,
-  });
+const Update = ({ token }) => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [productData, setProductData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const setProductValue = (e) => {
+  // Récupérer le produit
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/product/${id}`, {
+          headers: { token },
+        });
+        if (res.data.success) {
+          setProductData(res.data.payload);
+        } else {
+          toast.error(res.data.message || "Produit introuvable");
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Erreur lors du chargement du produit");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id, token]);
+
+  const handleChange = (e) => {
     const { name, value, type, checked, files } = e.target;
     if (type === "file") {
       setProductData({ ...productData, [name]: files[0] });
@@ -35,77 +45,71 @@ const AddProduct = ({ token }) => {
   };
 
   const toggleSize = (size) => {
-    setProductData((prevData) => {
-      const sizes = prevData.sizes.includes(size)
-        ? prevData.sizes.filter((s) => s !== size)
-        : [...prevData.sizes, size];
-      return { ...prevData, sizes };
+    setProductData((prev) => {
+      const sizes = prev.sizes.includes(size)
+        ? prev.sizes.filter((s) => s !== size)
+        : [...prev.sizes, size];
+      return { ...prev, sizes };
     });
   };
 
-  const handleAddProduct = async (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
-
     if (!token) {
       toast.error("Token not found. Please login again.");
       return;
     }
 
+    if (productData.price < 0) {
+      toast.error("Le prix ne peut pas être négatif");
+      return;
+    }
+    if (productData.stock < 0 || productData.minStock < 0) {
+      toast.error("Le stock et le seuil minimal ne peuvent pas être négatifs");
+      return;
+    }
+
     try {
-      const appendData = new FormData();
+      const formData = new FormData();
       ["image1", "image2", "image3", "image4"].forEach((img) => {
-        productData[img] && appendData.append(img, productData[img]);
+        if (productData[img] instanceof File) {
+          formData.append(img, productData[img]);
+        }
       });
+      formData.append("name", productData.name);
+      formData.append("description", productData.description);
+      formData.append("price", productData.price);
+      formData.append("category", productData.category);
+      formData.append("subCategory", productData.subCategory);
+      formData.append("bestseller", productData.bestseller);
+      formData.append("sizes", JSON.stringify(productData.sizes));
+      formData.append("stock", productData.stock);
+      formData.append("minStock", productData.minStock);
+      if (productData.expiryDate) formData.append("expiryDate", productData.expiryDate);
 
-      // ✅ Ajout des nouveaux champs
-      appendData.append("name", productData.name);
-      appendData.append("description", productData.description);
-      appendData.append("price", productData.price);
-      appendData.append("category", productData.category);
-      appendData.append("subCategory", productData.subCategory);
-      appendData.append("bestseller", productData.bestseller);
-      appendData.append("sizes", JSON.stringify(productData.sizes));
-      appendData.append("stock", productData.stock);
-      appendData.append("minStock", productData.minStock);
-      if (productData.expiryDate) {
-        appendData.append("expiryDate", productData.expiryDate);
-      }
-
-      const res = await axios.post(`${API_URL}/product/add`, appendData, {
+      const res = await axios.put(`${API_URL}/product/${id}`, formData, {
         headers: { token },
       });
 
       if (res.data.success) {
-        setProductData({
-          name: "",
-          description: "",
-          price: 0,
-          category: "Men",
-          subCategory: "Topwear",
-          sizes: [],
-          bestseller: false,
-          stock: 0,
-          minStock: 5,
-          expiryDate: "",
-          image1: null,
-          image2: null,
-          image3: null,
-          image4: null,
-        });
-        toast.success(res.data.message);
+        toast.success("Produit mis à jour !");
+        navigate("/list-products");
       } else {
-        toast.error(res.data.message || "Something went wrong");
+        toast.error(res.data.message || "Échec de la mise à jour");
       }
-    } catch (error) {
-      console.error(error);
-      toast.error("Error adding product. Check console.");
+    } catch (err) {
+      console.error(err);
+      const message = err.response?.data?.message || "Erreur lors de la mise à jour du produit";
+      toast.error(message);
     }
   };
+  if (loading) return <p>Chargement...</p>;
+  if (!productData) return <p>Produit non trouvé</p>;
 
   return (
     <main>
       <form
-        onSubmit={handleAddProduct}
+        onSubmit={handleUpdate}
         className="flex flex-col w-full items-start gap-3"
       >
         {/* Upload Images */}
@@ -115,11 +119,11 @@ const AddProduct = ({ token }) => {
             {["image1", "image2", "image3", "image4"].map((image, index) => (
               <label key={index} htmlFor={image}>
                 <img
-                  className="w-20"
+                  className="w-20 h-20 object-cover"
                   src={
-                    productData[image]
+                    productData[image] instanceof File
                       ? URL.createObjectURL(productData[image])
-                      : assets.upload_area
+                      : productData[image] // si déjà en URL depuis la DB
                   }
                   alt="upload area"
                 />
@@ -128,7 +132,7 @@ const AddProduct = ({ token }) => {
                   type="file"
                   id={image}
                   hidden
-                  onChange={setProductValue}
+                  onChange={handleChange}
                 />
               </label>
             ))}
@@ -143,8 +147,8 @@ const AddProduct = ({ token }) => {
             type="text"
             placeholder="Type here"
             value={productData.name}
-            onChange={setProductValue}
-            className="w-full max-w-[500px] px-3 py-2"
+            onChange={handleChange}
+            className="w-full max-w-[500px] px-3 py-2 border rounded"
             required
           />
         </div>
@@ -155,8 +159,8 @@ const AddProduct = ({ token }) => {
             name="description"
             placeholder="Write product description"
             value={productData.description}
-            onChange={setProductValue}
-            className="w-full max-w-[500px] px-3 py-2"
+            onChange={handleChange}
+            className="w-full max-w-[500px] px-3 py-2 border rounded"
             required
           />
         </div>
@@ -167,8 +171,8 @@ const AddProduct = ({ token }) => {
             <select
               name="category"
               value={productData.category}
-              onChange={setProductValue}
-              className="w-full px-3 py-2"
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded"
             >
               <option value="Men">Men</option>
               <option value="Women">Women</option>
@@ -181,8 +185,8 @@ const AddProduct = ({ token }) => {
             <select
               name="subCategory"
               value={productData.subCategory}
-              onChange={setProductValue}
-              className="w-full px-3 py-2"
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded"
             >
               <option value="Topwear">Topwear</option>
               <option value="Bottomwear">Bottomwear</option>
@@ -197,8 +201,8 @@ const AddProduct = ({ token }) => {
               type="number"
               placeholder="25SR"
               value={productData.price}
-              onChange={setProductValue}
-              className="w-full max-w-[500px] px-3 py-2"
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded"
               required
             />
           </div>
@@ -213,8 +217,8 @@ const AddProduct = ({ token }) => {
               type="number"
               placeholder="Ex: 50"
               value={productData.stock}
-              onChange={setProductValue}
-              className="w-full max-w-[500px] px-3 py-2"
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded"
               required
             />
           </div>
@@ -226,8 +230,8 @@ const AddProduct = ({ token }) => {
               type="number"
               placeholder="Ex: 5"
               value={productData.minStock}
-              onChange={setProductValue}
-              className="w-full max-w-[500px] px-3 py-2"
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded"
               required
             />
           </div>
@@ -237,9 +241,9 @@ const AddProduct = ({ token }) => {
             <input
               name="expiryDate"
               type="date"
-              value={productData.expiryDate}
-              onChange={setProductValue}
-              className="w-full max-w-[500px] px-3 py-2"
+              value={productData.expiryDate || ""}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border rounded"
             />
           </div>
         </div>
@@ -251,10 +255,10 @@ const AddProduct = ({ token }) => {
             {["S", "M", "L", "XL", "XXL"].map((size) => (
               <p
                 key={size}
-                className={`cursor-pointer font-semibold py-1 px-3 bg-slate-200 ${
-                  productData.sizes.includes(size)
+                className={`cursor-pointer font-semibold py-1 px-3 border rounded ${
+                  productData.sizes?.includes(size)
                     ? "bg-orange-300 text-white"
-                    : ""
+                    : "bg-slate-200"
                 }`}
                 onClick={() => toggleSize(size)}
               >
@@ -271,7 +275,7 @@ const AddProduct = ({ token }) => {
             name="bestseller"
             id="bestseller"
             checked={productData.bestseller}
-            onChange={setProductValue}
+            onChange={handleChange}
           />
           <label htmlFor="bestseller">Add to bestseller</label>
         </div>
@@ -280,11 +284,11 @@ const AddProduct = ({ token }) => {
           type="submit"
           className="uppercase bg-black text-white px-3 py-3 rounded mt-3"
         >
-          Add Product
+          Update Product
         </button>
       </form>
     </main>
   );
 };
 
-export default AddProduct;
+export default Update;

@@ -5,14 +5,15 @@ import { atlasURI } from "../secret.js";
 
 const connectDB = async (option = {}) => {
   try {
-    mongoose.connect(atlasURI, option);
-    console.log("Connection to DB is successfull established");
+    await mongoose.connect(atlasURI, option);
+    console.log("✅ Connection to DB successfully established");
 
-    mongoose.connection.on("Error", (error) => {
-      console.log(`Db connection error ${error}`);
+    mongoose.connection.on("error", (error) => {
+      console.error(`❌ DB connection error: ${error}`);
     });
   } catch (error) {
-    console.log(`could not connect ${error.toString()}`);
+    console.error(`❌ Could not connect: ${error.message}`);
+    process.exit(1); // optionnel, arrêter l'app si la connexion échoue
   }
 };
 
