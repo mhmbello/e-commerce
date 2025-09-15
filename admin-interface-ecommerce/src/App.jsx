@@ -9,6 +9,8 @@ import Users from "./pages/Users";
 import Categories from "./pages/Categories";
 import Sidebar from "./components/Sidebar";
 import Login from "./components/Login";
+import Dashboard from "./pages/Dashboard";
+import HeroDashboard from "./pages/HeroDashboard";
 export const serverURL = "http://localhost:4001";
 const App = () => {
   const [token, setToken] = useState(
@@ -29,6 +31,8 @@ const App = () => {
             <Sidebar />
             <div className='p-10 w-full'>
               <Routes>
+                <Route path='/' element={<Dashboard />} />
+                <Route path='/hero' element={<HeroDashboard token={token} />} />
                 <Route path='/add-product' element={<AddProduct token={token} />} />
                 <Route path='/list-products' element={<ListProducts />} />
                 <Route path='/orders' element={<OrdersProduct token={token} />} />

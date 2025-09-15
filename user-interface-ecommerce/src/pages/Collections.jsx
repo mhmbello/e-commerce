@@ -9,36 +9,50 @@ const Collections = () => {
 
   const [showFilters, setShowFilters] = useState(false);
   const [filterProducts, setFilterProducts] = useState([]);
-  const [category, setCategory] = useState([]);
-  const [subCategory, setSubCategory] = useState([]);
-  const [categoriesData, setCategoriesData] = useState([]);
+  const [categoriesData, setCategoriesData] = useState([]); // toutes les catégories + subCategories
+  const [category, setCategory] = useState([]); // catégories sélectionnées
+  const [subCategory, setSubCategory] = useState([]); // sous-catégories sélectionnées
   const [sortType, setSortType] = useState("relavent");
 
-  // Toggle category selection
+  // Toggle category
   const toggleCategory = (e) => {
-    if (category.includes(e.target.value)) {
-      setCategory((prev) => prev.filter((item) => item !== e.target.value));
+    const value = e.target.value;
+    if (category.includes(value)) {
+      setCategory((prev) => prev.filter((c) => c !== value));
+      // Supprime les subCategories liées à cette catégorie
+      const removedCategory = categoriesData.find((cat) => cat.name === value);
+      if (removedCategory) {
+        setSubCategory((prev) =>
+          prev.filter(
+            (sub) =>
+              !removedCategory.subCategories
+                .map((sc) => sc.name)
+                .includes(sub)
+          )
+        );
+      }
     } else {
-      setCategory((prev) => [...prev, e.target.value]);
+      setCategory((prev) => [...prev, value]);
     }
   };
 
-  // Toggle subCategory selection
+  // Toggle subCategory
   const toggleSubCategory = (e) => {
-    if (subCategory.includes(e.target.value)) {
-      setSubCategory((prev) => prev.filter((item) => item !== e.target.value));
+    const value = e.target.value;
+    if (subCategory.includes(value)) {
+      setSubCategory((prev) => prev.filter((s) => s !== value));
     } else {
-      setSubCategory((prev) => [...prev, e.target.value]);
+      setSubCategory((prev) => [...prev, value]);
     }
   };
 
-  // Fetch categories & subcategories from backend
+  // Fetch categories from API
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const res = await fetch("http://localhost:4001/api/category");
         const data = await res.json();
-        setCategoriesData(data.payload || []); // <- utilise payload
+        setCategoriesData(data.payload || []);
       } catch (err) {
         console.error(err);
       }
@@ -56,15 +70,17 @@ const Collections = () => {
       );
     }
 
+    // Filtrer par catégorie
     if (category.length > 0) {
       productsCopy = productsCopy.filter((item) =>
-        category.includes(item.category)
+        category.includes(item.category._id) // <-- utiliser l'ID
       );
     }
 
+    // Filtrer par sous-catégorie
     if (subCategory.length > 0) {
       productsCopy = productsCopy.filter((item) =>
-        subCategory.includes(item.subCategory)
+        subCategory.includes(item.subCategory._id) // <-- utiliser l'ID
       );
     }
     setFilterProducts(productsCopy);
@@ -123,9 +139,9 @@ const Collections = () => {
               categoriesData.map((cat) => (
                 <p className='flex gap-2' key={cat._id}>
                   <input
-                    className='w-3'
+                    className='w-5 cursor-pointer'
                     type='checkbox'
-                    value={cat.name}
+                    value={cat._id}
                     onChange={toggleCategory}
                   />
                   {cat.name}
@@ -144,19 +160,19 @@ const Collections = () => {
           <div className='flex flex-col gap-2 text-sm font-light text-gray-700'>
             {Array.isArray(categoriesData) &&
               categoriesData
-                .filter((cat) => category.includes(cat.name)) // seulement les catégories sélectionnées
-                .flatMap((cat) => cat.subCategories)         // on récupère les subCategories
+                .filter((cat) => category.includes(cat._id)) // seulement les catégories sélectionnées
+                .flatMap((cat) => cat.subCategories)
                 .map((sub) => (
                   <p className='flex gap-2' key={sub._id}>
                     <input
-                      className='w-3'
+                      className='w-5 cursor-pointer'
                       type='checkbox'
-                      value={sub.name}
+                      value={sub._id}
                       onChange={toggleSubCategory}
                     />
                     {sub.name}
-                </p>
-            ))}
+                  </p>
+                ))}
           </div>
         </div>
       </div>
@@ -170,9 +186,9 @@ const Collections = () => {
             onChange={(e) => setSortType(e.target.value)}
             className='border border-gray-300 text-sm px-2'
           >
-            <option value='relavent'>Relavent</option>
-            <option value='low-high'>Low-High</option>
-            <option value='high-low'>High-Low</option>
+            <option value='relavent'>Pertinent</option>
+            <option value='low-high'>Moins cher au plus cher</option>
+            <option value='high-low'>Plus cher au moins cher</option>
           </select>
         </div>
 

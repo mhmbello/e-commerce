@@ -12,6 +12,8 @@ import productRouter from "./routes/product.route.js";
 import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/order.route.js";
 import categoryRouter from "./routes/category.route.js";
+import dashboardRoutes from "./routes/dashboard.route.js";
+import heroRouter from "./routes/hero.route.js";
 import "./cron/alertCron.js";
 
 const app = express();
@@ -42,6 +44,9 @@ app.get("/", (req, res) => {
 
 //bypass all routes
 
+
+app.use("/api/hero", heroRouter);
+app.use("/api/admin", dashboardRoutes);
 app.use("/api/user", userRouter);
 app.use("/api/product", productRouter);
 app.use("/api/cart", cartRouter);

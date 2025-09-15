@@ -4,13 +4,38 @@ import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { API_URL } from "../constant/constant";
 import * as XLSX from "xlsx";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 const token = localStorage.getItem("token");
 
 const ListProducts = () => {
   const [listProduct, setListProduct] = useState([]);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const filter = searchParams.get("filter");
+  const [filterProducts, setFilterProducts] = useState([]);
+
   console.log("LIST PRODUCTS :::::::::::::", listProduct)
+
+  useEffect(() => {
+    let productsCopy = listProduct.slice();
+
+    if (filter === "expired") {
+      const today = new Date();
+      productsCopy = productsCopy.filter(
+        (p) => p.expiryDate && new Date(p.expiryDate) <= today
+      );
+    }
+
+    if (filter === "lowStock") {
+      productsCopy = productsCopy.filter(
+        (p) => p.stock <= p.minStock
+      );
+    }
+
+    setFilterProducts(productsCopy);
+  }, [filter, listProduct]);
+
+
 
   // Récupération des produits depuis ton backend
   const fetchListProducts = async () => {
@@ -130,14 +155,14 @@ const ListProducts = () => {
           </tr>
         </thead>
         <tbody>
-          {listProduct.length === 0 ? (
+          {filterProducts.length === 0 ? (
             <tr>
               <td colSpan={8} className="text-center py-4">
                 Aucun produit
               </td>
             </tr>
           ) : (
-            listProduct.map((product) => (
+            filterProducts.map((product) => (
               <tr key={product._id} className="border-t">
                 <td className="px-2 py-1">
                   <img
@@ -146,14 +171,16 @@ const ListProducts = () => {
                     alt={`Image de ${product.name}`}
                   />
                 </td>
-                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500 text-bold" : ""}`}>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500" : ""}`}>
                   {product.name}
                 </td>
-                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500 text-bold" : ""}`}>{product.category?.name}</td>
-                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500 text-bold" : ""}`}>{product.price} €</td>
-                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500 text-bold" : ""}`}>{product.stock}</td>
-                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500 text-bold" : ""}`}>{product.minStock || 0}</td>
-                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500 text-bold" : ""}`}>{product.expiryDate || "before-date"}</td>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500" : ""}`}>
+                  {product.category?.name || "N/A"}
+                </td>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500" : ""}`}>{product.price} GNF</td>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500" : ""}`}>{product.stock}</td>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500" : ""}`}>{product.minStock || 0}</td>
+                <td className={`px-2 py-1 ${product.stock <= product.minStock ? "text-red-500" : ""}`}>{product.expiryDate || "before-date"}</td>
                 <td className="px-2 py-1 text-center">
                   <button className="text-blue-500 mr-4" onClick={() => navigate(`/update-product/${product._id}`)}>
                     Edit

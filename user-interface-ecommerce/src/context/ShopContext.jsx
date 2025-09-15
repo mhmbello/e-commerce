@@ -20,6 +20,7 @@ const ShopContextProvider = (props) => {
       const res = await axios.get(serverURL + "/product/all");
 
       console.log("RESULTAT :::::::::::::::", serverURL + "/product/all")
+      console.log("RESPONSE :::::::::::::::", res.data.payload);
 
       if (res.data.success) {
         setProducts(res.data.payload);

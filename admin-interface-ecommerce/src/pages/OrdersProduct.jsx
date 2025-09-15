@@ -114,6 +114,7 @@ const OrdersProduct = ({ token }) => {
               <option value='Shipped'>Expédié</option>
               <option value='Out for delivery'>En cours de livraison</option>
               <option value='Delivered'>Livré</option>
+              <option value='Cancel'>Annulé</option>
             </select>
           </div>
         ))}

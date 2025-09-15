@@ -56,7 +56,7 @@ const placeOrder = async (req, res, next) => {
         .join("\n");
 
       await sendEmail({
-        to: "rahmatoulayedia99@gmail.com",
+        to: process.env.ADMIN_EMAIL,
         subject: `Alerte stock faible`,
         text: `Les produits suivants ont atteint le seuil minimal de stock :\n\n${productList}`,
         html: `<p>Les produits suivants ont atteint le seuil minimal de stock :</p><ul>${lowStockProducts.map(p => `<li>${p.name}: Stock actuel ${p.stock}</li>`).join("")}</ul>`,
