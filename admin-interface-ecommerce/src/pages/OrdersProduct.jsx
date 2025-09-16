@@ -99,7 +99,7 @@ const OrdersProduct = ({ token }) => {
               <p className='text-sm sm:text-[15px]'>
                 Articles: {order.items.length}
               </p>
-              <p className='mt-3'>éthode: {order.paymentMethod}</p>
+              <p className='mt-3'>Méthode: {order.paymentMethod}</p>
               <p>Paiement: {order.payment ? "Effectué" : "En attente"}</p>
               <p>Date: {new Date(order.date).toLocaleDateString()}</p>
             </div>

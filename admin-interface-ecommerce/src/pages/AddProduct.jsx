@@ -131,7 +131,7 @@ const AddProduct = ({ token }) => {
             {["image1", "image2", "image3", "image4"].map((image, index) => (
               <label key={index} htmlFor={image}>
                 <img
-                  className="w-20"
+                  className="w-20 cursor-pointer"
                   src={
                     productData[image]
                       ? URL.createObjectURL(productData[image])
@@ -153,7 +153,7 @@ const AddProduct = ({ token }) => {
 
         {/* Product Details */}
         <div className="w-full">
-          <p className="mb-2 font-medium text-sm">Product Name</p>
+          <p className="mb-2 font-medium text-sm">Nom du produit</p>
           <input
             name="name"
             type="text"
@@ -166,7 +166,7 @@ const AddProduct = ({ token }) => {
         </div>
 
         <div className="w-full">
-          <p className="mb-2 font-medium text-sm">Product Description</p>
+          <p className="mb-2 font-medium text-sm">Description</p>
           <textarea
             name="description"
             placeholder="Write product description"
@@ -179,14 +179,15 @@ const AddProduct = ({ token }) => {
 
         <div className="flex flex-col sm:flex-row sm:gap-6 gap-2 w-full">
           <div>
-            <p className="mb-2 font-medium text-sm">Product Category</p>
+            <p className="mb-2 font-medium text-sm">Catégorie</p>
             <select
               name="category"
               value={productData.category}
               onChange={setProductValue}
               className="w-full px-3 py-2"
+              required
             >
-              <option value="">Sélectionner une catégorie</option>
+              <option value="">-- catégorie --</option>
               {categories.map(cat => (
                 <option key={cat._id} value={cat._id}>
                   {cat.name}
@@ -196,14 +197,15 @@ const AddProduct = ({ token }) => {
           </div>
 
           <div>
-            <p className="mb-2 font-medium text-sm">Product SubCategory</p>
+            <p className="mb-2 font-medium text-sm">Sous-catégorie</p>
             <select
               name="subCategory"
               value={productData.subCategory}
               onChange={setProductValue}
               className="w-full px-3 py-2"
+              required
             >
-              <option value="">Sélectionner une sous-catégorie</option>
+              <option value="">-- sous-catégorie --</option>
               {categories
                 .find(cat => cat._id === productData.category)
                 ?.subCategories?.map(sub => (
@@ -215,7 +217,7 @@ const AddProduct = ({ token }) => {
           </div>
 
           <div>
-            <p className="mb-2 font-medium text-sm">Product Price</p>
+            <p className="mb-2 font-medium text-sm">Prix</p>
             <input
               name="price"
               type="number"
@@ -231,7 +233,7 @@ const AddProduct = ({ token }) => {
         {/* Stock & Péremption */}
         <div className="flex flex-col sm:flex-row sm:gap-6 gap-2 w-full">
           <div>
-            <p className="mb-2 font-medium text-sm">Stock</p>
+            <p className="mb-2 font-medium text-sm">Quantite en Stock</p>
             <input
               name="stock"
               type="number"
@@ -270,9 +272,9 @@ const AddProduct = ({ token }) => {
 
         {/* Sizes */}
         <div>
-          <p className="mb-2 font-medium text-sm">Product Sizes</p>
+          <p className="mb-2 font-medium text-sm">Tailles/Poids</p>
           <div className="flex gap-2.5">
-            {["S", "M", "L", "XL", "XXL"].map((size) => (
+            {["S", "M", "L", "XL", "XXL", "1Kg", "500g", "250g", "125g"].map((size) => (
               <p
                 key={size}
                 className={`cursor-pointer font-semibold py-1 px-3 bg-slate-200 ${

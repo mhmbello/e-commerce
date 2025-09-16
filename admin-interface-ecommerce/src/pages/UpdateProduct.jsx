@@ -4,14 +4,30 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { API_URL } from "../constant/constant";
+import { assets } from "../assets/admin_assets/assets";
 
 const Update = ({ token }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [productData, setProductData] = useState(null);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Récupérer le produit
+  // Charger les catégories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/category`);
+        const mainCategories = res.data.payload.filter((c) => !c.parent);
+        setCategories(mainCategories);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  // Charger le produit
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -19,7 +35,19 @@ const Update = ({ token }) => {
           headers: { token },
         });
         if (res.data.success) {
-          setProductData(res.data.payload);
+          const p = res.data.payload;
+          // Convertir tableau d'images en champs image1..image4
+          const imagesObj = {};
+          p.image.forEach((url, idx) => {
+            imagesObj[`image${idx + 1}`] = url;
+          });
+
+          setProductData({
+            ...p,
+            ...imagesObj,
+            sizes: Array.isArray(p.sizes) ? p.sizes : [],
+            bestseller: !!p.bestseller,
+          });
         } else {
           toast.error(res.data.message || "Produit introuvable");
         }
@@ -85,7 +113,11 @@ const Update = ({ token }) => {
       formData.append("sizes", JSON.stringify(productData.sizes));
       formData.append("stock", productData.stock);
       formData.append("minStock", productData.minStock);
-      if (productData.expiryDate) formData.append("expiryDate", productData.expiryDate);
+      if (productData.expiryDate) {
+        formData.append("expiryDate", productData.expiryDate);
+      } else {
+        formData.append("expiryDate", "");
+      }
 
       const res = await axios.put(`${API_URL}/product/${id}`, formData, {
         headers: { token },
@@ -99,10 +131,13 @@ const Update = ({ token }) => {
       }
     } catch (err) {
       console.error(err);
-      const message = err.response?.data?.message || "Erreur lors de la mise à jour du produit";
+      const message =
+        err.response?.data?.message ||
+        "Erreur lors de la mise à jour du produit";
       toast.error(message);
     }
   };
+
   if (loading) return <p>Chargement...</p>;
   if (!productData) return <p>Produit non trouvé</p>;
 
@@ -119,11 +154,11 @@ const Update = ({ token }) => {
             {["image1", "image2", "image3", "image4"].map((image, index) => (
               <label key={index} htmlFor={image}>
                 <img
-                  className="w-20 h-20 object-cover"
+                  className="w-20 h-20 object-cover cursor-pointer"
                   src={
                     productData[image] instanceof File
                       ? URL.createObjectURL(productData[image])
-                      : productData[image] // si déjà en URL depuis la DB
+                      : productData[image] || assets.upload_area
                   }
                   alt="upload area"
                 />
@@ -141,11 +176,10 @@ const Update = ({ token }) => {
 
         {/* Product Details */}
         <div className="w-full">
-          <p className="mb-2 font-medium text-sm">Product Name</p>
+          <p className="mb-2 font-medium text-sm">Nom du produit</p>
           <input
             name="name"
             type="text"
-            placeholder="Type here"
             value={productData.name}
             onChange={handleChange}
             className="w-full max-w-[500px] px-3 py-2 border rounded"
@@ -154,10 +188,9 @@ const Update = ({ token }) => {
         </div>
 
         <div className="w-full">
-          <p className="mb-2 font-medium text-sm">Product Description</p>
+          <p className="mb-2 font-medium text-sm">Description</p>
           <textarea
             name="description"
-            placeholder="Write product description"
             value={productData.description}
             onChange={handleChange}
             className="w-full max-w-[500px] px-3 py-2 border rounded"
@@ -167,39 +200,46 @@ const Update = ({ token }) => {
 
         <div className="flex flex-col sm:flex-row sm:gap-6 gap-2 w-full">
           <div>
-            <p className="mb-2 font-medium text-sm">Product Category</p>
+            <p className="mb-2 font-medium text-sm">Categorie</p>
             <select
               name="category"
               value={productData.category}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded"
             >
-              <option value="Men">Men</option>
-              <option value="Women">Women</option>
-              <option value="Kids">Kids</option>
+              <option value="">-- catégorie --</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
 
           <div>
-            <p className="mb-2 font-medium text-sm">Product SubCategory</p>
+            <p className="mb-2 font-medium text-sm">Sous-catégorie</p>
             <select
               name="subCategory"
               value={productData.subCategory}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded"
             >
-              <option value="Topwear">Topwear</option>
-              <option value="Bottomwear">Bottomwear</option>
-              <option value="Winterwear">Winterwear</option>
+              <option value="">-- sous-catégorie --</option>
+              {categories
+                .find((cat) => cat._id === productData.category)
+                ?.subCategories?.map((sub) => (
+                  <option key={sub._id} value={sub._id}>
+                    {sub.name}
+                  </option>
+                ))}
             </select>
           </div>
 
           <div>
-            <p className="mb-2 font-medium text-sm">Product Price</p>
+            <p className="mb-2 font-medium text-sm">Prix</p>
             <input
               name="price"
               type="number"
-              placeholder="25SR"
               value={productData.price}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded"
@@ -211,11 +251,10 @@ const Update = ({ token }) => {
         {/* Stock & Péremption */}
         <div className="flex flex-col sm:flex-row sm:gap-6 gap-2 w-full">
           <div>
-            <p className="mb-2 font-medium text-sm">Stock</p>
+            <p className="mb-2 font-medium text-sm">Quantite en Stock</p>
             <input
               name="stock"
               type="number"
-              placeholder="Ex: 50"
               value={productData.stock}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded"
@@ -228,7 +267,6 @@ const Update = ({ token }) => {
             <input
               name="minStock"
               type="number"
-              placeholder="Ex: 5"
               value={productData.minStock}
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded"
@@ -241,18 +279,21 @@ const Update = ({ token }) => {
             <input
               name="expiryDate"
               type="date"
-              value={productData.expiryDate || ""}
+              value={
+                productData.expiryDate
+                  ? new Date(productData.expiryDate).toISOString().split("T")[0]
+                  : ""
+              }
               onChange={handleChange}
               className="w-full px-3 py-2 border rounded"
             />
           </div>
         </div>
-
         {/* Sizes */}
         <div>
-          <p className="mb-2 font-medium text-sm">Product Sizes</p>
+          <p className="mb-2 font-medium text-sm">Tailles/Poids</p>
           <div className="flex gap-2.5">
-            {["S", "M", "L", "XL", "XXL"].map((size) => (
+            {["S", "M", "L", "XL", "XXL", "1Kg", "500g", "250g", "125g"].map((size) => (
               <p
                 key={size}
                 className={`cursor-pointer font-semibold py-1 px-3 border rounded ${

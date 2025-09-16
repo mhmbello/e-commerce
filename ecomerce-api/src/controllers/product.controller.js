@@ -93,36 +93,93 @@ const handleAllProducts = async (req, res, next) => {
   }
 };
 
-
-// update stock
-const updateProductStock = async (req, res, next) => {
+const handleUpdateProduct = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { stock } = req.body;
+    const {
+      name,
+      description,
+      price,
+      category,
+      subCategory,
+      sizes,
+      bestseller,
+      stock,
+      minStock,
+      expiryDate,
+    } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw createError(400, "Invalid product ID");
-    }
+    // Charger les images uploadées
+    const image1 = req.files?.image1?.[0];
+    const image2 = req.files?.image2?.[0];
+    const image3 = req.files?.image3?.[0];
+    const image4 = req.files?.image4?.[0];
 
-    const product = await productModel.findByIdAndUpdate(
-      id,
-      { stock },
-      { new: true }
-    );
+    const images = [image1, image2, image3, image4].filter((img) => img);
 
+    // Trouver le produit existant
+    const product = await productModel.findById(id);
     if (!product) {
       throw createError(404, "Product not found");
     }
 
+    let imagesURL = [];
+
+    if (images.length > 0) {
+      // 🔥 Supprimer les anciennes images de Cloudinary
+      if (product.image && product.image.length > 0) {
+        for (const imgUrl of product.image) {
+          // Récupérer le public_id de Cloudinary depuis l’URL
+          const publicId = imgUrl.split("/").slice(-2).join("/").split(".")[0];
+          await cloudinary.uploader.destroy(publicId);
+        }
+      }
+
+      // Uploader les nouvelles images
+      const forever = `product/${category}`;
+      imagesURL = await Promise.all(
+        images.map(async (img) => {
+          let result = await cloudinary.uploader.upload(img.path, {
+            resource_type: "image",
+            folder: forever,
+          });
+          return result.secure_url;
+        })
+      );
+
+      // Remplacer totalement
+      product.image = imagesURL;
+    }
+
+    // Mise à jour des champs
+    product.name = name ?? product.name;
+    product.description = description ?? product.description;
+    product.price = price ? Number(price) : product.price;
+    product.category = category ?? product.category;
+    product.subCategory = subCategory ?? product.subCategory;
+    product.sizes = sizes ? JSON.parse(sizes) : product.sizes;
+    product.bestseller =
+      bestseller !== undefined
+        ? bestseller === "true"
+          ? true
+          : false
+        : product.bestseller;
+    product.stock = stock ?? product.stock;
+    product.minStock = minStock ?? product.minStock;
+    product.expiryDate = expiryDate ?? product.expiryDate;
+
+    await product.save();
+
     return successResponse(res, {
       statusCode: 200,
-      message: "Stock updated successfully",
+      message: "Product updated successfully",
       payload: product,
     });
   } catch (error) {
     next(error);
   }
 };
+
 //remove product
 const handleRemoveProduct = async (req, res, next) => {
   try {
@@ -163,6 +220,7 @@ const handleSingleProduct = async (req, res, next) => {
     return successResponse(res, {
       statusCode: 200,
       message: "product was returned successfully",
+      payload: product,
     });
   } catch (error) {
     next(error);
@@ -207,6 +265,6 @@ export {
   handleAllProducts,
   handleRemoveProduct,
   handleSingleProduct,
-  updateProductStock,
+  handleUpdateProduct,
   getProductById,
 };
