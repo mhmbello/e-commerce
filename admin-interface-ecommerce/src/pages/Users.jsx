@@ -12,7 +12,7 @@ const Users = () => {
   // Récupération des utilisateurs depuis ton backend
   const fetchListUsers = async () => {
     try {
-      const res = await axios.get(`${API_URL}/user/all`);
+      const res = await axios.get(`${API_URL}/user/users-with-orders`);
       if (res.data.success) {
         setListUsers(res.data.payload);
       } else {
@@ -46,7 +46,6 @@ const Users = () => {
     const rows = listUsers.map((u) => ({
       Nom: u.name,
       Email: u.email,
-      Role: u.role || "user",
       Commandes: u.orders?.length || 0,
     }));
 
@@ -68,7 +67,6 @@ const Users = () => {
       listUsers.map((u) => ({
         Nom: u.name,
         Email: u.email,
-        Role: u.role || "user",
         Commandes: u.orders?.length || 0,
       }))
     );
@@ -114,7 +112,7 @@ const Users = () => {
               <td className="px-2 py-1">{index + 1}</td>
               <td className="px-2 py-1">{user.name}</td>
               <td className="px-2 py-1">{user.email}</td>
-              <td className="px-2 py-1">{user.totalOrders}</td>
+              <td className="px-2 py-1">{user.orderCount || 0}</td>
               <td className="px-2 py-1">{new Date(user.createdAt).toLocaleDateString()}</td>
               <td className="px-2 py-1 text-center">
                 <button

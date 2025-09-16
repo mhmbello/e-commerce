@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { API_URL } from "../constant/constant";
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -13,7 +14,7 @@ const Categories = () => {
 
   const fetchCategories = async () => {
     try {
-      const res = await axios.get("http://localhost:4001/api/category");
+      const res = await axios.get(`${API_URL}/category/test/with-product-count`);
       setCategories(res.data.payload || res.data);
     } catch (err) {
       console.error("Erreur lors du chargement des catégories :", err);
@@ -55,7 +56,7 @@ const Categories = () => {
   try {
     if (modalCategory._id) {
       // Update existante (nom + description seulement)
-      await axios.put(`http://localhost:4001/api/category/${modalCategory._id}`, {
+      await axios.put(`${API_URL}/category/${modalCategory._id}`, {
         name: modalCategory.name,
         description: modalCategory.description,
       });
@@ -67,7 +68,7 @@ const Categories = () => {
       );
     } else {
       // Nouvelle catégorie principale
-      const resMain = await axios.post("http://localhost:4001/api/category", {
+      const resMain = await axios.post(`${API_URL}/category`, {
         name: modalCategory.name,
         description: modalCategory.description,
         parent: null, // catégorie principale
@@ -80,7 +81,7 @@ const Categories = () => {
       const subCategories = modalCategory.subCategories.filter((s) => s.trim() !== "");
       for (let subName of subCategories) {
         if (subName.trim() === "") continue;
-        const resSub = await axios.post("http://localhost:4001/api/category", {
+        const resSub = await axios.post(`${API_URL}/category`, {
           name: subName,
           description: "",
           parent: mainCategory._id, // parent = catégorie principale
@@ -102,7 +103,7 @@ const Categories = () => {
 
   const deleteCategory = async (id) => {
     try {
-      await axios.delete(`http://localhost:4001/api/category/${id}`);
+      await axios.delete(`${API_URL}/category/${id}`);
       setCategories(categories.filter((c) => c._id !== id));
     } catch (err) {
       console.error("Erreur lors de la suppression :", err);
@@ -145,7 +146,7 @@ const Categories = () => {
                     </span>
                   ))}
                 </td>
-                <td className="px-2 py-1">{cat.products?.length || 0}</td>
+                <td className="px-2 py-1">{cat.productCount || 0}</td>
                 <td className="px-2 py-1 text-center flex justify-center gap-2">
                   <button
                     onClick={() => openModal(cat)}

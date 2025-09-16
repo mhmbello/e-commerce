@@ -1,4 +1,5 @@
 import categoryModel from "../models/category.model.js";
+import productModel from "../models/product.model.js";
 
 // Créer une catégorie ou sous-catégorie
 export const createCategory = async (req, res) => {
@@ -37,7 +38,35 @@ export const getCategories = async (req, res) => {
   }
 };
 
+export const getCategoriesWithProductCount = async (req, res) => {
+  try {
+    // Récupérer toutes les catégories principales
+    const categories = await categoryModel.find({ parent: null }).lean();
 
+    const categoriesWithCount = await Promise.all(
+      categories.map(async (cat) => {
+        // Compter les produits pour cette catégorie principale
+        const productCount = await productModel.countDocuments({ category: cat._id });
+
+        // Récupérer les sous-catégories
+        const subCategories = await categoryModel.find({ parent: cat._id }).lean();
+
+        return {
+          ...cat,
+          productCount,
+          subCategories, // sans compter les produits dans les sous-catégories
+        };
+      })
+    );
+
+    return res.status(200).json({
+      success: true,
+      payload: categoriesWithCount,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
 // Récupérer une catégorie par ID avec ses sous-catégories
 export const getCategoryById = async (req, res) => {
   try {

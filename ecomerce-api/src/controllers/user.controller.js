@@ -125,35 +125,33 @@ const getAllUsers = async (req, res, next) => {
   }
 };
 
-const getAllUsersWithOrderCount = async (req, res, next) => {
+const getUsersWithOrderCount = async (req, res, next) => {
   try {
-    // Aggregation pour ajouter le nombre de commandes à chaque utilisateur
     const users = await userModel.aggregate([
       {
         $lookup: {
-          from: "orders",          // Nom de la collection orders
-          localField: "_id",       // Champ utilisateur
-          foreignField: "userId",  // Champ correspondant dans orders
+          from: "orders", // doit correspondre au nom exact de la collection
+          let: { userId: { $toString: "$_id" } }, // convertir ObjectId en string
+          pipeline: [
+            { $match: { $expr: { $eq: ["$userId", "$$userId"] } } }
+          ],
           as: "orders",
         },
       },
       {
         $addFields: {
-          totalOrders: { $size: "$orders" }, // Compte le nombre de commandes
+          orderCount: { $size: "$orders" }, // nombre de commandes
         },
       },
       {
         $project: {
-          password: 0, // On exclut le mot de passe
-          orders: 0,   // Facultatif : on peut ne pas renvoyer la liste complète
+          password: 0, // ne pas exposer le mot de passe
+          orders: 0,   // optionnel : ne pas renvoyer les détails des commandes
         },
       },
     ]);
 
-    res.status(200).json({
-      success: true,
-      payload: users,
-    });
+    res.status(200).json({ success: true, payload: users });
   } catch (error) {
     next(error);
   }
@@ -186,4 +184,4 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-export { handleRegister, handleLogin, handleAdminLogin, getAllUsers, getAllUsersWithOrderCount };
+export { handleRegister, handleLogin, handleAdminLogin, getAllUsers, getUsersWithOrderCount };
